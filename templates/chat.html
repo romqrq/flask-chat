@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chat page for {{ username }}</title>
+</head>
+
+<body>
+    <h1>Welcome, {{ username }}</h1>
+
+    <form method="POST">
+        <textarea name="message" id="message" cols="50" rows="4"></textarea>
+        <br>
+        <button>Send message</button>
+    </form>
+
+    <!-- For loop -->
+    {% for message in chat_messages %}
+    <p>({{ message.timestamp }}) {{ message.from }}: {{ message.message }}</p>
+    {% endfor %}
+
+    <script>
+        let textbox = getElementById("message")
+
+        // location.reload() refreshes the page, second value is the interval
+        let timer = setTimeout(function () {
+            location.reload();
+        }, 5000)
+        // onkeydown runs whenever there's a key press, the clearTimeout() stops the timer and the code afterwards starts again
+        textbox.onkeydown = function (e) {
+
+            clearTimeout(timer)
+
+            timer = setTimeout(function () {
+                location.reload();
+            }, 5000)
+
+        }
+    </script>
+</body>
+
+</html>

@@ -1,38 +1,44 @@
 import os
-from flask import Flask, redirect
+from datetime import datetime
+from flask import Flask, redirect, render_template, request, session, url_for
 
 app = Flask(__name__)
-
+app.secret_key = "randomstring123"
 messages = []
 
 
-def add_messages(username, message):
+def add_message(username, message):
     """Add messages to the messages list"""
-    messages.append("{}: {}".format(username, message))
+    now = datetime.now().strftime("%H:%M:%S")
+    messages.append({"timestamp": now, "from": username, "message": message})
 
 
-def get_all_messages():
-    """Get all the messages and separate them with a 'br'"""
-    return "<br>".join(messages)
-
-
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def index():
     """ Main page with instructions """
-    return "To send a message use /USERNAME/MESSAGE"
+
+    if request.method == "POST":
+        session["username"] = request.form["username"]
+
+    if "username" in session:
+        return redirect(url_for("user", username=session["username"]))
+        # if the username here is the same as the if above, it will be redirected to @app.route('/username') otherwise it shows the index.html
+
+    return render_template("index.html")
 
 
-@app.route('/<username>')
+@app.route('/chat/<username>', methods=["GET", "POST"])
 def user(username):
-    """ Display chat messages """
-    return "<h1>Welcome, {0}</h1>{1}".format(username, get_all_messages())
+    """ Add and display chat messages """
+    # Obtaining username and message variables and send those into add_messages() to add them to the list
+    if request.method == "POST":
+        username = session["username"]
+        message = request.form["message"]
+        add_message(username, message)
+        return redirect(url_for("user", username=session["username"]))
+        # this redirect prevents the render_template below from sending the message everytime the page is refreshed
 
-
-@app.route('/<username>/<message>')
-def send_message(username, message):
-    """ Create a new message and redurect back to chat page """
-    add_messages(username, message)
-    return redirect("/" + username)
+    return render_template("chat.html", username=username, chat_messages=messages)
 
 
 # This is the way the lesson showed but it VS throws an error saying port has to be a str instead of int
